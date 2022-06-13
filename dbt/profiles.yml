@@ -1,0 +1,13 @@
+default:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      threads: 4
+      host: postgres-db
+      port: 5432
+      user: postgres
+      pass: password
+      dbname: postgres
+      schema: analytics
+      sslmode: disable

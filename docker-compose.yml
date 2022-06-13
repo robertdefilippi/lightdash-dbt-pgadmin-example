@@ -1,0 +1,79 @@
+version: "3.8"
+services:
+  lightdash:
+    image: lightdash/lightdash:latest
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    environment:
+      - PGHOST=${PGHOST:-postgres-db}
+      - PGPORT=${PGPORT:-5432}
+      - PGUSER=${PGUSER:-postgres}
+      - PGPASSWORD=${PGPASSWORD}
+      - PGDATABASE=${PGDATABASE:-postgres}
+      - SECURE_COOKIES=${SECURE_COOKIES:-false}
+      - TRUST_PROXY=${TRUST_PROXY:-false}
+      - LIGHTDASH_SECRET=${LIGHTDASH_SECRET}
+      - PORT=${PORT:-8080}
+      - LIGHTDASH_INSTALL_TYPE=${LIGHTDASH_INSTALL_TYPE:-docker_image}
+      - ALLOW_MULTIPLE_ORGS=${ALLOW_MULTIPLE_ORGS:-false}
+      - DBT_PROFILES_DIR=/usr/app/dbt/profiles
+      - DBT_PROJECT_DIR=/usr/app/dbt/
+    volumes:
+      - "./dbt:/usr/app/dbt"
+    ports:
+      - ${PORT:-8080}:${PORT:-8080}
+    expose:
+      - "8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: ${PGPASSWORD}
+      POSTGRES_USER: "postgres"
+      POSTGRES_DB: ${PGDATABASE:-postgres}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: somepassword
+    ports:
+      - "5050:80"
+    expose:
+      - "5050"
+
+  dbt:
+    build:
+      context: ./dbt
+      dockerfile: Dockerfile
+    volumes:
+      - ./dbt:/dbt
+    command: /bin/bash -c "chmod +x /dbt/dbt_entrypoint.sh && /dbt/dbt_entrypoint.sh"
+    ports:
+      - 8899:8899
+    expose:
+      - "8899"
+    depends_on:
+      - postgres-db
+
+volumes:
+  db-data:

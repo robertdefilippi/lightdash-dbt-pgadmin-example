@@ -1,0 +1,1 @@
+select * from "postgres"."analytics"."stg_payments"

@@ -1,0 +1,73 @@
+{
+    "path_count": 132,
+    "parsed_path_count": 132,
+    "static_analysis_path_count": 6,
+    "static_analysis_parsed_path_count": 5,
+    "is_partial_parse_enabled": false,
+    "is_static_analysis_enabled": true,
+    "read_files_elapsed": 0.47560874999999214,
+    "load_macros_elapsed": 5.278434002000722,
+    "parse_project_elapsed": 1.3778443339997466,
+    "patch_sources_elapsed": 0.00010720800037233857,
+    "process_manifest_elapsed": 0.07010995800010278,
+    "load_all_elapsed": 7.451424877999671,
+    "projects": [
+        {
+            "project_name": "couply",
+            "elapsed": 1.3004277499994714,
+            "parsers": [
+                {
+                    "parser": "model",
+                    "elapsed": 0.2787742499995147,
+                    "parsed_path_count": 6
+                },
+                {
+                    "parser": "seed",
+                    "elapsed": 0.09146341599989682,
+                    "parsed_path_count": 3
+                },
+                {
+                    "parser": "docs",
+                    "elapsed": 0.002904666000176803,
+                    "parsed_path_count": 2
+                },
+                {
+                    "parser": "test",
+                    "elapsed": 0.908796500999415,
+                    "parsed_path_count": 2
+                }
+            ],
+            "parsed_path_count": 13
+        },
+        {
+            "project_name": "dbt_postgres",
+            "elapsed": 0.017212083998856542,
+            "parsers": [],
+            "parsed_path_count": 0
+        },
+        {
+            "project_name": "dbt",
+            "elapsed": 0.021242834000076982,
+            "parsers": [
+                {
+                    "parser": "docs",
+                    "elapsed": 0.002141375000064727,
+                    "parsed_path_count": 1
+                }
+            ],
+            "parsed_path_count": 1
+        },
+        {
+            "project_name": "codegen",
+            "elapsed": 0.01806274999944435,
+            "parsers": [],
+            "parsed_path_count": 0
+        },
+        {
+            "project_name": "dbt_utils",
+            "elapsed": 0.020413791999999376,
+            "parsers": [],
+            "parsed_path_count": 0
+        }
+    ]
+}

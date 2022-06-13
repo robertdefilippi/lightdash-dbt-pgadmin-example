@@ -1,0 +1,185 @@
+version: 2
+
+models:
+  - name: customers
+    description: This table has basic information about a customer, as well as some derived facts based on a customer's orders
+
+    columns:
+      - name: customer_id
+        description: This is a unique identifier for a customer
+        tests:
+          - unique
+          - not_null
+
+      - name: first_name
+        description: Customer's first name.
+        meta:
+          contains_pii: true
+
+      - name: last_name
+        description: Customer's last name.
+        meta:
+          contains_pii: true
+
+      - name: full_name
+        description: Customer's full name.
+        meta:
+          contains_pii: true
+
+      - name: first_order
+        description: Date (UTC) of a customer's first order
+
+      - name: most_recent_order
+        description: Date (UTC) of a customer's most recent order
+
+      - name: number_of_orders
+        description: Count of the number of orders a customer has placed
+
+      - name: number_of_completed_orders
+        description: Count of the number of orders a customer has in the completed stage
+
+      - name: number_of_returned_orders
+        description: Count of the number of orders a customer has in the returned stage
+
+      - name: customer_lifetime_value
+        description: Total value of a customer's orders
+
+      - name: customer_lifetime_age
+        description: >
+          Total length of time in days, between the first a last order of a customer.
+
+  - name: orders
+    description: This table has basic information about orders, as well as some derived facts based on payments
+
+    # lightdash metadata to also include customers in the orders model
+    meta:
+      joins:
+        - join: customers
+          sql_on: ${customers.customer_id} = ${orders.customer_id}
+
+
+    columns:
+      - name: order_id
+        tests:
+          - unique
+          - not_null
+        description: This is a unique identifier for an order
+        meta:
+          metrics:
+            total_orders:
+              type: count
+
+      - name: customer_id
+        description: Foreign key to the customers table
+        tests:
+          - not_null
+          - relationships:
+              to: ref('customers')
+              field: customer_id
+        meta:
+          metrics:
+            unique_customers:
+              type: count_distinct
+
+      - name: order_date
+        description: Date (UTC) that the order was placed
+        meta:
+          dimension:
+              label: "Date of Order"
+              type: timestamp
+              time_intervals: ['raw', 'month', 'year']
+          metrics:
+            first_ordered_at:
+              type: min
+            last_ordered_at:
+              type: max
+
+      - name: status
+        description: '{{ doc("orders_status") }}'  # Bring in .md files to help users better navigate data
+        tests:
+          - accepted_values:
+              values: ['placed', 'shipped', 'completed', 'return_pending', 'returned']
+
+      - name: amount
+        description: Total amount of the order
+        tests:
+          - not_null
+
+      - name: credit_card_amount
+        description: Amount of the order paid for by credit card
+        tests:
+          - not_null
+
+      - name: coupon_amount
+        description: Amount of the order paid for by coupon
+        tests:
+          - not_null
+
+      - name: bank_transfer_amount
+        description: Amount of the order paid for by bank transfer
+        tests:
+          - not_null
+
+      - name: gift_card_amount
+        description: Amount of the order paid for by gift card
+        tests:
+          - not_null
+
+  - name: payments
+    description: This table has information about individual payments
+
+    # https://docs.lightdash.com/references/joins
+    meta:
+      joins:
+        - join: orders
+          sql_on: ${orders.order_id} = ${payments.order_id}
+        - join: customers
+          sql_on: ${customers.customer_id} = ${orders.customer_id}
+
+    columns:
+      - name: payment_id
+        description: This is a unique identifier for a payment
+        tests:
+          - unique
+        meta:
+          metrics:
+            payment_count:
+              type: count
+              description: count of all payments
+            has_multuple_payments:
+              type: number
+              sql: "(${payment_count} > 1)::BOOLEAN"
+
+      - name: order_id
+        description: Foreign key to the orders table
+        meta:
+          metrics:
+            distinct_orders:
+              type: count_distinct
+
+      - name: payment_method
+        description: Method of payment used, for example credit card
+
+      - name: amount
+        description: Total amount of the individual payment
+        meta:
+          metrics:
+            total_revenue:
+              type: sum
+              description: Sum of all payments
+            is_big_order:
+              type: number
+              sql: "(${total_revenue} > 50)::BOOLEAN"
+            avg_revenue:
+              type: average
+              description: Avg revenue of all payments
+            total_credit_card_revenue:
+              type: sum
+              sql: "CASE WHEN ${payment_method} = 'credit_card' THEN ${amount} ELSE 0 END"
+            total_bank_transfer_revenue:
+              type: sum
+              sql: "CASE WHEN ${payment_method} = 'bank_transfer' THEN ${amount} ELSE 0 END"
+            total_net_revenue:
+              description: Sum of all completed payments minus a 15% tax rate
+              sql: "CASE WHEN lower(${orders.status}) in ('completed') THEN ${amount} * 0.85 ELSE 0 END"
+              type: sum
