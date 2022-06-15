@@ -1,5 +1,7 @@
 # Lightdash dbt Demo
 
+![lightdash-header](./assets/0_title_card.png)
+
 A quick (small) example of how [Lightdash](https://github.com/lightdash/lightdash) and
 [dbt](https://github.com/dbt-labs/dbt-core) can be used together in a local project.
 
@@ -26,7 +28,7 @@ check there.
 er-compose.yml up --build --force-recreate --detach --remove-orphans`
   * If you change `PGPASSWORD` here, make sure you update other references within the project
 
-4. See below to determine which part of the project you want to access.
+4. Access a specific part of the project.
 
 ## Accessing the Projects
 

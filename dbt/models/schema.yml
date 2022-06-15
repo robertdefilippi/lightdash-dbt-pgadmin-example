@@ -87,7 +87,7 @@ models:
           dimension:
               label: "Date of Order"
               type: timestamp
-              time_intervals: ['raw', 'month', 'year']
+              time_intervals: ['date', 'month', 'year']
           metrics:
             first_ordered_at:
               type: min
@@ -169,6 +169,7 @@ models:
               description: Sum of all payments
             is_big_order:
               type: number
+              description: Is the revenue over $50
               sql: "(${total_revenue} > 50)::BOOLEAN"
             avg_revenue:
               type: average
